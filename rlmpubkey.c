@@ -21,7 +21,7 @@ char* localdir = ".\\";
 
 typedef struct pubkeyinfo
 {
-	char* filename;
+	char filename[200];
 	int offset[10];
 	char* pubkey[10];
 	int pubkeylen[10];
@@ -65,10 +65,9 @@ int listpubkey(PubkeyInfo*list)
 
 int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 {
-	char* tvalue = buffer; int num = 0;
-	for (size_t i = 0; i < bufferlen-225; i++)
+	char* tvalue = buffer; int num = 0; int result = 0;
+	for (size_t i = 0; i < bufferlen; i++)
 	{
-		//printf("%x", tvalue[i]);
 		if (tvalue[i] == (char)0x30 &&
 			tvalue[ i + 1 ] == (char)0x81 &&
 			tvalue[i + 3] == (char)0x02 &&
@@ -82,6 +81,9 @@ int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 			pki->pubkey[num] = pubkey;
 			pki->pubkeylen[num] = publen;
 			num++;
+			i += publen;
+
+			result = 1;
 			//printf("\n");
 			//for (size_t j = 0; j < publen; j++)
 			//{
@@ -91,6 +93,7 @@ int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 			//printf("\n");
 		}
 	}
+	return result;
 }
 
 
@@ -102,15 +105,21 @@ int readsubfile(char *subfile,PubkeyInfo *pk)
 	stat(subfile, &buf);
 	unsigned char* bsubf = calloc(buf.st_size, sizeof(char));
 	FILE* subf = fopen(subfile, "rb");
+	if (subf == NULL)
+	{
+		return 0;
+	}
 	fread(bsubf, buf.st_size, 1, subf);
-	pki->filename = subfile;
-	checkpubflag(bsubf, buf.st_size, pki);
-	pki->next = pk->next;//将最后一个next置为NULL
-	pk->next = pki;//追加链表
+	if (checkpubflag(bsubf, buf.st_size, pki))
+	{
+		strcpy(pki->filename, subfile);
+		pki->next = pk->next;//将最后一个next置为NULL
+		pk->next = pki;//追加链表
+	}
 }
 
 /*遍历文件*/
-int listFiles(char* dir)
+int listFiles(char* dir,PubkeyInfo *pki)
 {
 	struct _finddata_t findData;
 	
@@ -134,13 +143,14 @@ int listFiles(char* dir)
 			strcpy(sdir, dir);
 			strcat(sdir, findData.name);
 			strcat(sdir, spilt);
-			listFiles(sdir);
+			listFiles(sdir,pki);
 		}
 		else
 		{
 			char checkf[2000];
 			sprintf(checkf, "%s%s", dir, findData.name);
 			//CheckFile(checkf);  /**/
+			readsubfile(checkf, pki);
 		}
 	} while (_findnext(handle, &findData) == 0);
 	_findclose(handle);
@@ -154,10 +164,10 @@ int listFiles(char* dir)
 int main()
 {
 	PubkeyInfo *pfirst = init();
-	//listFiles(localdir);
-	readsubfile("lms.exe", pfirst);
-	readsubfile("lms-new.exe", pfirst);
-	readsubfile("rlm.exe", pfirst);
+	listFiles(localdir, pfirst);
+	//readsubfile("lms.exe", pfirst);
+	//readsubfile("lms-new.exe", pfirst);
+	//readsubfile("rlm.exe", pfirst);
 	listpubkey(pfirst);
 	return 0;
 }

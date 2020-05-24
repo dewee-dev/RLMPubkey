@@ -15,7 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Find RLM Pubkey.c">
+    <ClCompile Include="replacepub.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="rlmpubkey.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
