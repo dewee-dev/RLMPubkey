@@ -139,7 +139,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="rlmpubkey.c" />
-    <ClCompile Include="replacepub.cpp" />
+    <ClCompile Include="replacepub.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rlmpubkey.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

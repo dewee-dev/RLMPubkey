@@ -15,11 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="replacepub.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="rlmpubkey.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="replacepub.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rlmpubkey.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
