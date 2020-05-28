@@ -142,6 +142,7 @@
     <ClCompile Include="replacepub.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pubkeyset.h" />
     <ClInclude Include="rlmpubkey.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

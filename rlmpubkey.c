@@ -1,10 +1,10 @@
 #define  _CRT_SECURE_NO_WARNINGS
 #include "rlmpubkey.h"
+#include "pubkeyset.h"
 
-#ifdef _WIN32
-char* spilt = "\\";
-char* localdir = ".\\";
-#endif // _WIN32
+int replacepubkey(PubkeyInfo* pki);
+
+
 
 //链表初始化
 PubkeyInfo* init()
@@ -20,26 +20,32 @@ int listpubkey(PubkeyInfo*list)
 	{
 		printf("#######################################\n");
 		printf("filename = %s\n", p->filename);
-		printf("isvkey = %s\n", p->isvkey);
-		for (size_t i = 0; i < 10; i++)
+		printf("RLM_LICENSE_TO_RUN = %s\n", p->isvkey);
+		printf("offset = %d\n", p->offset);
+		for (size_t j = 0; j < p->pubkeylen; j++)
 		{
-			if (p->offset[i] ==0)
-			{
-				break;
-			}
-			printf("offset = %d\n", p->offset[i]);
-			printf("RLM_LICENSE_TO_RUN = %d\n", p->pubkeylen[i]);
-			for (size_t j = 0; j < p->pubkeylen[i]; j++)
-			{
-				
-				printf("%02X:", (unsigned char)(p->pubkey[i][j]));
-			}
-			printf("\n");
+			printf("%02X:", (unsigned char)(p->pubkey[j]));
 		}
+		printf("\n");
+		//for (size_t i = 0; i < 10; i++)
+		//{
+		//	if (p->offset[i] ==0)
+		//	{
+		//		break;
+		//	}
+		//	printf("offset = %d\n", p->offset[i]);
+		//	printf("pubkey = %d\n", p->pubkeylen[i]);
+		//	for (size_t j = 0; j < p->pubkeylen[i]; j++)
+		//	{
+		//		
+		//		printf("%02X:", (unsigned char)(p->pubkey[i][j]));
+		//	}
+		//	printf("\n");
+		//}
 
 		p = p->next;
 	}
-
+	return 1;
 }
 
 
@@ -55,13 +61,20 @@ int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 			(tvalue[i + 4] == (char)0x3F || tvalue[i + 4] == (char)0x40 || tvalue[i + 4] == (char)0x41)
 			)
 		{
+
 			int publen = (unsigned char)tvalue[i + 2] + 3;
-			char* pubkey = calloc(publen, 1);
+			char* pubkey = calloc(publen+1, 1);
 			memcpy(pubkey, &tvalue[i], publen);
-			pki->offset[num] = i;
-			pki->pubkey[num] = pubkey;
-			pki->pubkeylen[num] = publen;
-			num++;
+			if (strcmp(pubkey, defaultpubkey1)==0|| 
+				strcmp(pubkey, defaultpubkey2)==0|| 
+				strcmp(pubkey, defaultpubkey3)==0 )
+			{
+				i += publen;
+				continue;
+			}
+			pki->offset = i;
+			pki->pubkey = pubkey;
+			pki->pubkeylen = publen;
 			i += publen;
 			result = 1;
 		}
@@ -95,12 +108,14 @@ int checkisvflag(char* buffer, long bufferlen, PubkeyInfo* pki)
 			if (tvalue[strint] !=(char )'<')
 			{
 				strlen = endint - strint;
-				char* isvkey = calloc(strlen, 1);
+				char* isvkey = calloc(strlen+1, 1);
 				memcpy(isvkey, &tvalue[strint], strlen);
 				pki->isvkey = isvkey;
 			}
+			i = endint;
 		}
 	}
+	return 1;
 }
 
 
@@ -121,9 +136,11 @@ int readsubfile(char *subfile,PubkeyInfo *pk)
 	{
 		checkisvflag(bsubf, buf.st_size, pki);
 		strcpy(pki->filename, subfile);
+		pki->filesize = buf.st_size;
 		pki->next = pk->next;//将最后一个next置为NULL
 		pk->next = pki;//追加链表
 	}
+	return 1;
 }
 
 /*遍历文件*/
@@ -158,6 +175,10 @@ int listFiles(char* dir,PubkeyInfo *pki)
 			char checkf[2000];
 			sprintf(checkf, "%s%s", dir, findData.name);
 			//CheckFile(checkf);  /**/
+			if (strcmp(findData.name,"RLMPubkey.exe")==0)
+			{
+				continue;
+			}
 			readsubfile(checkf, pki);
 		}
 	} while (_findnext(handle, &findData) == 0);
@@ -167,13 +188,11 @@ int listFiles(char* dir,PubkeyInfo *pki)
 }
 
 
-
-
 int main()
 {
 	PubkeyInfo *pfirst = init();
 	listFiles(localdir, pfirst);
-	listpubkey(pfirst);
+	//listpubkey(pfirst);
 	replacepubkey(pfirst);
 	return 0;
 }

@@ -7,24 +7,27 @@
 
 
 #ifdef _LINUX
-char* spilt = "/";
-char* localdir = "./";
+static char* spilt = "/";
+static char* localdir = "./";
 #endif // _LINUX
 
+#ifdef _WIN32
+static char* spilt = "\\";
+static char* localdir = ".\\";
+#endif // _WIN32
 
-/*
-*	1、循环遍历文件，定位RLM文件
-*	2、查找文件公钥信息
-*/
+
 
 typedef struct pubkeyinfo
 {
 	char filename[200];
-	int offset[10];
-	char* pubkey[10];
-	int pubkeylen[10];
+	int filesize;
+	int offset;
+	char* pubkey;
+	int pubkeylen;
 	char* isvkey;
 	struct pubkeyinfo* next;
 } PubkeyInfo;
 
-int replacepubkey(PubkeyInfo *pki);
+
+
