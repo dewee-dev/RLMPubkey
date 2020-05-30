@@ -3,7 +3,7 @@
 #include "pubkeyset.h"
 
 int replacepubkey(PubkeyInfo* pki);
-
+int createsign(PubkeyInfo* pki, char* rlmsign, char* ISV);
 
 
 //链表初始化
@@ -48,6 +48,19 @@ int listpubkey(PubkeyInfo*list)
 	return 1;
 }
 
+int compare(char* val1, char* val2, int len)
+{
+	for (size_t i = 0; i < len; i++)
+	{
+		if (val1[i] !=val2[i])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+
 
 //公钥检索
 int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
@@ -65,10 +78,15 @@ int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 			int publen = (unsigned char)tvalue[i + 2] + 3;
 			char* pubkey = calloc(publen+1, 1);
 			memcpy(pubkey, &tvalue[i], publen);
-			if (strcmp(pubkey, defaultpubkey1)==0|| 
-				strcmp(pubkey, defaultpubkey2)==0|| 
-				strcmp(pubkey, defaultpubkey3)==0 )
+			if (compare(pubkey, defaultpubkey1,publen) ||
+				compare(pubkey, defaultpubkey2, publen)||
+				compare(pubkey, defaultpubkey3, publen)||
+				compare(pubkey, pubkey224, publen)     ||
+				compare(pubkey, pubkey225, publen)     ||
+				compare(pubkey, pubkey226, publen)     ||
+				compare(pubkey, pubkey227, publen))
 			{
+
 				i += publen;
 				continue;
 			}
@@ -92,7 +110,7 @@ int checkisvflag(char* buffer, long bufferlen, PubkeyInfo* pki)
 		if (tvalue[i] == *(isvflag) &&
 			tvalue[i + 1] == *(isvflag + 1) &&
 			tvalue[i + 2] == *(isvflag + 2) &&
-			tvalue[i + 3] == *(isvflag + 3)&&
+			tvalue[i + 3] == *(isvflag + 3) &&
 			tvalue[i + 4] == *(isvflag + 4))
 		{
 			tmpint = i;
@@ -175,10 +193,6 @@ int listFiles(char* dir,PubkeyInfo *pki)
 			char checkf[2000];
 			sprintf(checkf, "%s%s", dir, findData.name);
 			//CheckFile(checkf);  /**/
-			if (strcmp(findData.name,"RLMPubkey.exe")==0)
-			{
-				continue;
-			}
 			readsubfile(checkf, pki);
 		}
 	} while (_findnext(handle, &findData) == 0);
@@ -190,9 +204,11 @@ int listFiles(char* dir,PubkeyInfo *pki)
 
 int main()
 {
+
 	PubkeyInfo *pfirst = init();
 	listFiles(localdir, pfirst);
 	//listpubkey(pfirst);
 	replacepubkey(pfirst);
+	createsign(pfirst,"rlmsign.exe","lms");
 	return 0;
 }

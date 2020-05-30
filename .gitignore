@@ -338,3 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/lms.exe
+/lms.exe_bak
+/rlmsign_lms.exe
