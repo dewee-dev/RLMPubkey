@@ -2,6 +2,7 @@
 #include "rlmpubkey.h"
 #include "pubkeyset.h"
 
+
 int replacepubkey(PubkeyInfo* pki);
 int createsign(PubkeyInfo* pki, char* rlmsign, char* ISV);
 
@@ -202,7 +203,7 @@ int listFiles(char* dir,PubkeyInfo *pki)
 }
 
 
-int main()
+int main_1()
 {
 
 	PubkeyInfo *pfirst = init();

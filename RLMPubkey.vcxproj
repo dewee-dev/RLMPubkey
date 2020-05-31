@@ -138,6 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.c" />
     <ClCompile Include="rlmpubkey.c" />
     <ClCompile Include="replacepub.c" />
   </ItemGroup>
@@ -145,6 +146,16 @@
     <ClInclude Include="pubkeyset.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rlmpubkey.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="exefile2.bin" />
+    <None Include="rlmsign.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RLMPubkey.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

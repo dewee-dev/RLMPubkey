@@ -91,7 +91,7 @@ int fwnull(FILE* filename, int len)
 	return 1;
 }
 
-int createsign(PubkeyInfo *pki, char* rlmsign, char* ISV)
+int createsign_bak(PubkeyInfo *pki, char* rlmsign, char* ISV)
 {
 	PubkeyInfo* p = pki->next;
 	int offset1 = 0x5d698; int offset2 = 0x5d698;
@@ -203,5 +203,121 @@ int createsign(PubkeyInfo *pki, char* rlmsign, char* ISV)
 
 	}
 	fclose(rlmsn);
+	fclose(rlmsncreat);
+}
+
+int createsign(PubkeyInfo* pki,unsigned char* rlmsign, char* ISV)
+{
+	PubkeyInfo* p = pki->next;
+	int offset1 = 0x5d698; int offset2 = 0x5d698;
+	int offset3 = 0x6e878; int offset4 = 0x6e888;
+	int end = 0x80c00;
+	//FILE* rlmsn = fopen(rlmsign, "rb");
+	char outname[50];
+	sprintf(outname, "rlmsign_%s.exe", ISV);
+	FILE* rlmsncreat = fopen(outname, "wb");
+
+	//char* f1 = calloc(offset1, 1);
+	//fread(f1, offset1, 1, rlmsn);
+
+	//fseek(rlmsn, 0x5d87b, SEEK_SET);
+	//char* f2 = calloc(offset3 - 0x5d87b, 1);
+	//fread(f2, offset3 - 0x5d87b, 1, rlmsn);
+
+	//fseek(rlmsn, 0x6e9a8, SEEK_SET);
+	//char* f3 = calloc(end - 0x6e9a8, 1);
+	//fread(f3, end - 0x6e9a8, 1, rlmsn);
+	unsigned char *pSign = rlmsign;
+	if (p->pubkeylen == 224)
+	{
+		fwrite(pSign, offset1, 1, rlmsncreat);
+
+		fwrite(prikey224, 250, 1, rlmsncreat);
+		//227私钥长252，224私钥长250，多两位用\0充填
+		fwnull(rlmsncreat, 2);
+		//公私钥间有4个00 充填
+		fwnull(rlmsncreat, 4);
+
+		fwrite(pubkey224, 224, 1, rlmsncreat);
+		//227公钥长227，224公钥长224，多三位用\0充填
+		fwnull(rlmsncreat, 3);
+
+		fwrite(pSign + 0x5d87b, offset3 - 0x5d87b, 1, rlmsncreat);
+
+		fwrite(ISV, strlen(ISV), 1, rlmsncreat);
+		fwnull(rlmsncreat, 16 - strlen(ISV));
+
+
+		fwrite(p->isvkey, strlen(p->isvkey), 1, rlmsncreat);
+		fwnull(rlmsncreat, 288 - strlen(p->isvkey));
+
+		//fwrite(pSign + 0x6e9a8, end - 0x6e9a8, 1, rlmsncreat);
+	}
+	else if (p->pubkeylen == 225)
+	{
+		fwrite(pSign, offset1, 1, rlmsncreat);
+
+		fwrite(prikey225, 250, 1, rlmsncreat);
+		//227私钥长252，225私钥长250，多两位用\0充填
+		fwnull(rlmsncreat, 2);
+		//公私钥间有4个00 充填
+		fwnull(rlmsncreat, 4);
+
+		fwrite(pubkey225, 225, 1, rlmsncreat);
+		//227公钥长227，224公钥长224，多三位用\0充填
+		fwnull(rlmsncreat, 2);
+
+		fwrite(pSign + 0x5d87b, offset3 - 0x5d87b, 1, rlmsncreat);
+
+		fwrite(ISV, strlen(ISV), 1, rlmsncreat);
+		fwnull(rlmsncreat, 16 - strlen(ISV));
+
+
+		fwrite(p->isvkey, strlen(p->isvkey), 1, rlmsncreat);
+		fwnull(rlmsncreat, 288 - strlen(p->isvkey));
+
+		//fwrite(pSign + 0x6e9a8, end - 0x6e9a8, 1, rlmsncreat);
+	}
+	else if (p->pubkeylen == 226)
+	{
+		fwrite(pSign, offset1, 1, rlmsncreat);
+
+		fwrite(prikey226, 251, 1, rlmsncreat);
+		//227私钥长252，226私钥长251
+		fwnull(rlmsncreat, 1);
+		//公私钥间有4个00 充填
+		fwnull(rlmsncreat, 4);
+
+		fwrite(pubkey226, 226, 1, rlmsncreat);
+		//227公钥长227，224公钥长224，多三位用\0充填
+		fwnull(rlmsncreat, 1);
+
+		fwrite(pSign + 0x5d87b, offset3 - 0x5d87b, 1, rlmsncreat);
+
+		fwrite(ISV, strlen(ISV), 1, rlmsncreat);
+		fwnull(rlmsncreat, 16 - strlen(ISV));
+
+
+		fwrite(p->isvkey, strlen(p->isvkey), 1, rlmsncreat);
+		fwnull(rlmsncreat, 288 - strlen(p->isvkey));
+
+		//fwrite(f3, end - 0x6e9a8, 1, rlmsncreat);
+	}
+	else if (p->pubkeylen == 227)
+	{
+		fwrite(pSign, offset3, 1, rlmsncreat);
+
+		fwrite(ISV, strlen(ISV), 1, rlmsncreat);
+		fwnull(rlmsncreat, 16 - strlen(ISV));
+
+
+		fwrite(p->isvkey, strlen(p->isvkey), 1, rlmsncreat);
+		fwnull(rlmsncreat, 288 - strlen(p->isvkey));
+
+		//fwrite(f3, end - 0x6e9a8, 1, rlmsncreat);
+
+	}
+
+	fwrite(pSign + 0x6e9a8, end - 0x6e9a8, 1, rlmsncreat);
 	fclose(rlmsncreat);
 }
