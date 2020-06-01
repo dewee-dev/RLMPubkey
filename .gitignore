@@ -341,3 +341,7 @@ healthchecksdb
 /lms.exe
 /lms.exe_bak
 /rlmsign_lms.exe
+/izero.set
+/FrameworkNativeLib.dll_bak
+/FrameworkNativeLib.dll
+/rlmsign_izero.exe

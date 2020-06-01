@@ -20,7 +20,7 @@ static char* localdir = ".\\";
 
 typedef struct pubkeyinfo
 {
-	char filename[200];
+	char filename[2000];
 	int filesize;
 	int offset;
 	char* pubkey;

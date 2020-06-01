@@ -23,7 +23,7 @@ int listpubkey(PubkeyInfo*list)
 		printf("filename = %s\n", p->filename);
 		printf("RLM_LICENSE_TO_RUN = %s\n", p->isvkey);
 		printf("offset = %d\n", p->offset);
-		for (size_t j = 0; j < p->pubkeylen; j++)
+		for (int j = 0; j < p->pubkeylen; j++)
 		{
 			printf("%02X:", (unsigned char)(p->pubkey[j]));
 		}
@@ -51,7 +51,7 @@ int listpubkey(PubkeyInfo*list)
 
 int compare(char* val1, char* val2, int len)
 {
-	for (size_t i = 0; i < len; i++)
+	for (int i = 0; i < len; i++)
 	{
 		if (val1[i] !=val2[i])
 		{
@@ -67,7 +67,7 @@ int compare(char* val1, char* val2, int len)
 int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 {
 	char* tvalue = buffer; int num = 0; int result = 0;
-	for (size_t i = 0; i < bufferlen; i++)
+	for (long i = 0; i < bufferlen; i++)
 	{
 		if (tvalue[i] == (char)0x30 &&
 			tvalue[ i + 1 ] == (char)0x81 &&
@@ -106,7 +106,7 @@ int checkisvflag(char* buffer, long bufferlen, PubkeyInfo* pki)
 {
 	char isvflag[5] = { 0x73,0x69,0x67,0x3d,0x22 };
 	char* tvalue = buffer; int strint = 0; int endint = 0; int tmpint = 0; int strlen = 0;
-	for (size_t i = 0; i < bufferlen; i++)
+	for (long i = 0; i < bufferlen; i++)
 	{
 		if (tvalue[i] == *(isvflag) &&
 			tvalue[i + 1] == *(isvflag + 1) &&
@@ -148,6 +148,8 @@ int readsubfile(char *subfile,PubkeyInfo *pk)
 	FILE* subf = fopen(subfile, "rb");
 	if (subf == NULL)
 	{
+		printf("%s文件读取失败，跳过分析.\n",subfile);
+		fclose(subf);
 		return 0;
 	}
 	fread(bsubf, buf.st_size, 1, subf);
@@ -159,6 +161,7 @@ int readsubfile(char *subfile,PubkeyInfo *pk)
 		pki->next = pk->next;//将最后一个next置为NULL
 		pk->next = pki;//追加链表
 	}
+	fclose(subf);
 	return 1;
 }
 
