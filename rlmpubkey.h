@@ -20,11 +20,12 @@ static char* localdir = ".\\";
 
 typedef struct pubkeyinfo
 {
-	char filename[2000];
+	char filename[1024];
 	int filesize;
 	int offset;
 	char* pubkey;
 	int pubkeylen;
+	char isvname[32];
 	char* isvkey;
 	struct pubkeyinfo* next;
 } PubkeyInfo;

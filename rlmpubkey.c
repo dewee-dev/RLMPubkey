@@ -101,6 +101,27 @@ int checkpubflag(char *buffer, long bufferlen,PubkeyInfo *pki)
 	return result;
 }
 
+int checkisvname(char* buffer, int value,PubkeyInfo *pki)
+{
+	for (int i = value; i > value -32; i--)
+	{
+		if ((buffer[i] < 0x30) ||
+			((0x39 < buffer[i]) &&(buffer[i] < 0x41)) ||
+			((0x5a < buffer[i]) && (buffer[i] < 0x61)) ||
+			(0x7a < buffer[i]))
+		{
+			if (value - (i+1) >= 2)
+			{
+				memcpy(pki->isvname, buffer+(i+1), value - i);
+				return 1;
+			}
+			return 0;
+		}
+	}
+	return 0;
+}
+
+
 //SIV检索
 int checkisvflag(char* buffer, long bufferlen, PubkeyInfo* pki)
 {
@@ -119,6 +140,7 @@ int checkisvflag(char* buffer, long bufferlen, PubkeyInfo* pki)
 			{
 				strint = tmpint+1;
 			}
+
 			tmpint = i;
 			while (tvalue[tmpint++] != '\0')
 			{
@@ -130,6 +152,17 @@ int checkisvflag(char* buffer, long bufferlen, PubkeyInfo* pki)
 				char* isvkey = calloc(strlen+1, 1);
 				memcpy(isvkey, &tvalue[strint], strlen);
 				pki->isvkey = isvkey;
+				/*ISV NAME*/
+				while (strint--)
+				{		
+					//printf("%c",tvalue[strint--]);
+					if (tvalue[strint] != '\0' && tvalue[strint] != 0x0a)
+					{
+						checkisvname(tvalue, strint, pki);
+						break;
+					}
+				}
+				
 			}
 			i = endint;
 		}
@@ -149,7 +182,6 @@ int readsubfile(char *subfile,PubkeyInfo *pk)
 	if (subf == NULL)
 	{
 		printf("%s文件读取失败，跳过分析.\n",subfile);
-		fclose(subf);
 		return 0;
 	}
 	fread(bsubf, buf.st_size, 1, subf);
@@ -171,7 +203,7 @@ int listFiles(char* dir,PubkeyInfo *pki)
 	struct _finddata_t findData;
 	
 	intptr_t handle;
-	char newdir[2000];
+	char newdir[1024];
 	strcpy(newdir, dir);
 	strcat(newdir, "*.*");
 	handle = _findfirst(newdir, &findData);
@@ -186,7 +218,7 @@ int listFiles(char* dir,PubkeyInfo *pki)
 			continue;
 		}
 		if (findData.attrib & _A_SUBDIR){
-			char* sdir[2000];
+			char sdir[1024];
 			strcpy(sdir, dir);
 			strcat(sdir, findData.name);
 			strcat(sdir, spilt);
@@ -194,9 +226,13 @@ int listFiles(char* dir,PubkeyInfo *pki)
 		}
 		else
 		{
-			char checkf[2000];
+			char checkf[1024];
 			sprintf(checkf, "%s%s", dir, findData.name);
 			//CheckFile(checkf);  /**/
+			if(strcmp(findData.name + strlen(findData.name) - 4, "_bak")==0)
+			{
+				continue;
+			}
 			readsubfile(checkf, pki);
 		}
 	} while (_findnext(handle, &findData) == 0);

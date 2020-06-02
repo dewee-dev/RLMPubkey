@@ -34,30 +34,38 @@ int freelist(PubkeyInfo* pki)
 
 int main(int argc, char* argv[])
 {
-	//if (argc ==1 || argc >2 )
-	//{
-	//	help();
-	//	return 0;
-	//}
 
-	PubkeyInfo* pfirst = init();
-	/*检索需要替换的公钥问题*/
+	PubkeyInfo* pfirst = init(),*ptmp;
+	char ISV[32];
+	/*检索需要替换的公钥文件*/
 	listFiles(localdir, pfirst);
 	if (pfirst->next ==NULL)
 	{
 		printf("没有需要替换的文件，软件退出\n");
 		return 0;
 	}
-	/*替换文件公钥*/
-	replacepubkey(pfirst);
+
 	/*rc 资源加载*/
 	HRSRC hRsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_EXE1), TEXT("EXE"));
 	DWORD dwSize = SizeofResource(NULL, hRsrc);
 	HGLOBAL hGlobal = LoadResource(NULL, hRsrc);
 	LPVOID pBuffer = LockResource(hGlobal);
-	/**/
-	//createsign(pfirst, (unsigned char *)pBuffer, argv[1]);
-	createsign(pfirst, (unsigned char*)pBuffer, "izero");
+	
+	/*生成注册机*/
+	ptmp = pfirst->next;
+	if (ptmp->isvname[0] =='\0')
+	{
+		printf("文件中未找到ISV值，请输入ISV\n");
+		scanf("%s", ISV);
+	}
+	else
+	{
+		memcpy(ISV, ptmp->isvname,sizeof(ptmp->isvname));
+	}
+	createsign(pfirst, (unsigned char*)pBuffer, ISV);
+	/*替换文件公钥*/
+	replacepubkey(pfirst);
+	/*释放资源*/
 	FreeResource(hGlobal);
 	freelist(pfirst);
 	return 1;
